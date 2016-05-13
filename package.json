@@ -4,11 +4,13 @@
   "description": "three.js Viewport for Flux",
   "main": "index.js",
   "dependencies": {
+    "express": "^4.13.4",
     "flux-viewport": "git+ssh://git@bitbucket.org/vannevartech/flux-viewport.git#03a1f2f26c6ccee025de3352d613408e880fd524"
   },
   "scripts": {
     "lint": "eslint index.js src/**;",
-    "update": "npm install; cp node_modules/flux-viewport/lib/* lib/; cp node_modules/flux-viewport/build/flux-viewport.global.js lib/"
+    "update": "npm install; cp node_modules/flux-viewport/lib/* lib/; cp node_modules/flux-viewport/build/flux-viewport.global.js lib/",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
