@@ -4,7 +4,9 @@
   "description": "three.js Viewport for Flux",
   "main": "index.js",
   "dependencies": {
-    "express": "^4.13.4",
+    "express": "^4.13.4"
+  },
+  "devDependencies": {
     "flux-viewport": "git+ssh://git@bitbucket.org/vannevartech/flux-viewport.git#03a1f2f26c6ccee025de3352d613408e880fd524"
   },
   "scripts": {
