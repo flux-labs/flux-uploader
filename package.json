@@ -1,0 +1,20 @@
+{
+  "name": "flux-viewport",
+  "version": "1.0.0",
+  "description": "three.js Viewport for Flux",
+  "main": "index.js",
+  "dependencies": {
+    "flux-viewport": "git+ssh://git@bitbucket.org/vannevartech/flux-viewport.git#03a1f2f26c6ccee025de3352d613408e880fd524"
+  },
+  "scripts": {
+    "lint": "eslint index.js src/**;",
+    "update": "npm install; cp node_modules/flux-viewport/lib/* lib/; cp node_modules/flux-viewport/build/flux-viewport.global.js lib/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:flux-labs/flux-uploader.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "homepage": "https://github.com/flux-labs/flux-uploader"
+}

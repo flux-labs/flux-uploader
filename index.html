@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+    <title>Flux Uploader</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Dependencies -->
+    <script src="https://flux.io/sdk/flux.js"></script>
+    <script src="./lib/three.min.js"></script>
+    <script src="./lib/flux-three-plugins.global.js"></script>
+    <script src="./lib/flux-viewport.global.js"></script>
+
+    <!-- This app -->
+    <script src="./src/index.js"></script>
+    <script src="./src/ObjToFlux.js"></script>
+    <script src="./src/StlToFlux.js"></script>
+
+</head>
+<body onkeypress="focusViewport()" onload="handleLoad()">
+    <header>
+        <h2>Flux Uploader and Viewport SDK App</h2>
+    </header>
+    <main>
+        <section>
+            Project: <select id="projectSelector" onchange="populateKeyList()"></select><br>
+            Key: <select id="keySelector"></select><br>
+            Upload: <input type="file" id="inputFile" onchange="handleFileChanged()"><br>
+            <button type="button" onclick="downloadFromFlux()">Download</button><br>
+            Status: <span id="statusSpan">Load</span><br>
+            <button type="button" onclick="jsonToViewport()">Visualize</button><br>
+        </section>
+        <section>
+            <div id="container" style="width:550px;height:300px;display:inline-block;background-color:#FFCCCC"></div>
+        </section>
+    </main>
+  <script>
+    'use strict';
+
+    var fluxScene = null;
+    var torus = {"origin":[0,0,0],"majorRadius":5,"minorRadius":3,"axis":[0,0,1],"primitive":"torus"};
+    var FLUX_CLIENT_KEY = '0f823656-da5e-4c8e-a704-91ab524aac42';
+    var fluxModel = null;
+    var fluxViewport = null;
+
+    function handleLoad() {
+        fluxViewport = new FluxViewport(container);
+        fluxViewport.setupDefaultLighting();
+        fluxViewport.setGeometryEntity(torus);
+        loginToFlux().then(function () {
+            fluxViewport.setTessUrl(getParasolidUrl(getFluxProject().projectInfo.id));
+        });
+    }
+
+    function focusViewport() {
+      fluxViewport.focus();
+    }
+  </script>
+</body>
+</html>
