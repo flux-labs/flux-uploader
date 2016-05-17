@@ -1,59 +1,165 @@
-<!doctype html>
+<!DOCTYPE HTML>
 <html>
 <head>
-    <title>Flux Uploader</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flux Uploader</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Dependencies -->
-    <script src="https://flux.io/sdk/flux.js"></script>
-    <script src="./lib/three.min.js"></script>
-    <script src="./lib/flux-three-plugins.global.js"></script>
-    <script src="./lib/flux-viewport.global.js"></script>
+  <!-- Favicons -->
+  <link rel="apple-touch-icon" sizes="57x57" href="./assets/favicons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="./assets/favicons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="./assets/favicons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="./assets/favicons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="./assets/favicons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="./assets/favicons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="./assets/favicons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="./assets/favicons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/favicons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="./assets/favicons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="./assets/favicons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="./assets/favicons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./assets/favicons/favicon-16x16.png">
+  <link rel="manifest" href="./assets/favicons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="./assets/favicons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
 
-    <!-- This app -->
-    <script src="./src/fluxApp.js"></script>
-    <script src="./src/ObjToFlux.js"></script>
-    <script src="./src/StlToFlux.js"></script>
+  <!-- JQuery -->
+  <script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
 
+  <!-- Flux Dependencies -->
+  <script src="https://npmcdn.com/flux-sdk-browser@0.3/dist/flux-sdk-min.js"></script>
+  <script src="./lib/three.min.js"></script>
+  <script src="./lib/flux-three-plugins.global.js"></script>
+  <script src="./lib/flux-viewport.global.js"></script>
+  <script src="./lib/flux-data-selector.js"></script>
+
+  <!-- UI Stuff -->
+  <script src="./lib/semantic/dist/semantic.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="./lib/semantic/dist/semantic.min.css">
+
+  <!-- App -->
+  <script src="./src/fluxApp.js"></script>
+  <script src="./src/ObjToFlux.js"></script>
+  <script src="./src/StlToFlux.js"></script>
+  <link rel="stylesheet" type="text/css" href="./src/fluxApp.css">
 </head>
-<body onkeypress="focusViewport()" onload="handleLoad()">
-    <header>
-        <h2>Flux Uploader and Viewport SDK App</h2>
-    </header>
-    <main>
-        <section>
-            Project: <select id="projectSelector" onchange="populateKeyList()"></select><br>
-            Key: <select id="keySelector"></select><br>
-            Upload: <input type="file" id="inputFile" onchange="handleFileChanged()"><br>
-            <button type="button" onclick="downloadFromFlux()">Download</button><br>
-            Status: <span id="statusSpan">Load</span><br>
-            <button type="button" onclick="jsonToViewport()">Visualize</button><br>
-        </section>
-        <section>
-            <div id="container" style="width:550px;height:300px;display:inline-block;background-color:#FFCCCC"></div>
-        </section>
-    </main>
+<body onload="handleLoad()">
+  <div id="menuBar" class="ui container menu">
+    <a href="https://labs.flux.io">
+      <div class="header item">
+        <img src="./assets/favicons//ms-icon-144x144.png">
+      </div>
+    </a>
+    <div class="header item">
+      FLUX Uploader
+    </div>
+    <div class="right menu">
+      <div class="item initial-view-login">
+          <button class="ui button teal login-flux">
+            <i class="sign in icon"></i>
+            Login to FLUX
+          </button>
+        </div>
+      </div>
+      <div class="item flux-view-logout">
+          <button class="ui button grey logout-flux">
+            <i class="sign out icon"></i>
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ui container segments">
+    <div class="ui container segment">
+      <div class="ui container center aligned box-input">
+        <input class="box-file" type="file" id="inputFile"/>
+        <label class="box-instruction" for="inputFile">
+          <div class="ui small teal button">Choose a File</div>
+          or drag and drop it here.
+        </label>
+        <div class="ui left aligned container box-viewport">
+          <div id="modelViewerContainer"></div>
+        </div>
+      </div>
+    </div>
+    <div class="ui container segment flux-view-form">
+      <div class="ui form stackable centered grid">
+        <div class="six wide column">
+          <div class="field">
+            <div class="ui fluid search selection huge dropdown projects-selection-dropdown disabled">
+              <i class="dropdown icon"></i>
+              <div class="default text">Select Project</div>
+              <div class="menu">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="six wide column">
+          <div class="field">
+            <div class="ui fluid search selection huge dropdown data-keys-selection-dropdown disabled">
+              <i class="dropdown icon"></i>
+              <div class="default text">Select Data Key</div>
+              <div class="menu">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="four wide center middle aligned column">
+          <div class="field">
+            <button class="ui huge green button upload-flux disabled">
+              <i class="cloud upload icon"></i>
+              Send to FLUX
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <script>
-    'use strict';
+    'use strict'
+    const FLUX_CLIENT_KEY = '7301f92d-84de-4b5a-8eb1-80aedd455f42';
+    const REDIRECT_URI = window.location.origin;
+    //const REDIRECT_URI = 'https://flux-3d-model-uploader.herokuapp.com';
 
-    var fluxScene = null;
-    var torus = {"origin":[0,0,0],"majorRadius":5,"minorRadius":3,"axis":[0,0,1],"primitive":"torus"};
-    var FLUX_CLIENT_KEY = '7301f92d-84de-4b5a-8eb1-80aedd455f42';
+    var fluxDataSelector = new FluxDataSelector(FLUX_CLIENT_KEY, REDIRECT_URI);
+
     var fluxModel = null;
     var fluxViewport = null;
+    var fluxScene = null;
+    var selectedFile = null;
+    var parsedDataPayload = null;
+    var uploadingStatus = false;
+    var selectedUploadDestination = false;
 
-    function handleLoad() {
-        fluxViewport = new FluxViewport(container);
-        fluxViewport.setupDefaultLighting();
-        fluxViewport.setGeometryEntity(torus);
-        loginToFlux().then(function () {
-            fluxViewport.setTessUrl(getParasolidUrl(getFluxProject().projectInfo.id));
-        });
-    }
+    // Setup Flux Data Selector
+    fluxDataSelector.setOnInitial(initialView);
+    fluxDataSelector.setOnLogin(fluxView);
+    fluxDataSelector.setOnProjects(populateProjects);
+    fluxDataSelector.setOnKeys(populateKeys);
+    fluxDataSelector.setOnValue(onValueChange);
 
-    function focusViewport() {
-      fluxViewport.focus();
-    }
+    fluxDataSelector.init();
+
+    // Drag and drop functionality.
+    $('.box-input').on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    })
+    .on('dragover dragenter', function() {
+      $('.box-input').addClass('is-dragover');
+    })
+    .on('dragleave dragend drop', function() {
+      $('.box-input').removeClass('is-dragover');
+    })
+    .on('drop', function(e) {
+      if (e.originalEvent.dataTransfer.files.length === 1) {
+        selectedFile = e.originalEvent.dataTransfer.files[0];
+        handleFileChange();
+      }
+    });
+
+    $('.box-file').on('change', handleFileSelect);
   </script>
 </body>
 </html>

@@ -1,0 +1,26 @@
+.box-input {
+  height: 700px;
+}
+
+.box-input.is-dragover {
+  background-color: teal;
+  opacity: 0.4;
+}
+
+.box-file {
+  display: none;
+}
+
+.box-instruction {
+  font-size: 1.5em;
+  cursor: pointer;
+}
+
+.box-viewport {
+  padding-top: 2%;
+  border: 0px;
+}
+
+.initial-view-login .flux-view-logout .flux-view-form {
+  display: none;
+}
