@@ -77,6 +77,49 @@ function convertStl(inStl) {
   });
 }
 
+function convertDxf(inDxf) {
+  return new Promise(function(resolve, reject) {
+    var result = [];
+    var currentEntityIndex = -1;
+
+    var lines = inDxf.split('\n');
+    var processingEntityType = 'NONE';
+    for (var i=0; i<lines.length; i++) {
+      var line = escape(lines[i]);
+
+      if (line === 'LINE%0D') {
+        currentEntityIndex += 1;
+        var lineTemplate = {
+          "start": [],
+          "end": [],
+          "primitive": "line"
+        };
+        result[currentEntityIndex] = lineTemplate;
+        processingEntityType = 'LINE';
+      }
+
+      if (processingEntityType === 'LINE') {
+        if (line === "%2010%0D") {
+          result[currentEntityIndex]["start"][0] = parseFloat(lines[i+1]);
+        } else if (line === "%2020%0D") {
+          result[currentEntityIndex]["start"][1] = parseFloat(lines[i+1]);
+        } else if (line === "%2030%0D") {
+          result[currentEntityIndex]["start"][2] = parseFloat(lines[i+1]);
+        } else if (line === "%2011%0D") {
+          result[currentEntityIndex]["end"][0] = parseFloat(lines[i+1]);
+        } else if (line === "%2021%0D") {
+          result[currentEntityIndex]["end"][1] = parseFloat(lines[i+1]);
+        } else if (line === "%2031%0D") {
+          result[currentEntityIndex]["end"][2] = parseFloat(lines[i+1]);
+          processingEntityType = 'NONE';
+        }
+      }
+    }
+
+    resolve(result);
+  });
+}
+
 function convertCsv(inCsv) {
   return new Promise(function(resolve, reject) {
     Papa.parse(inCsv, {

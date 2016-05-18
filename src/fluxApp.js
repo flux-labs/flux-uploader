@@ -69,6 +69,10 @@ function handleFileRead(e) {
     convertStl(result)
     .then(jsonToViewportHelper)
     .then(completeResult);
+  } else if (extension === 'dxf') {
+    convertDxf(result)
+    .then(jsonToViewportHelper)
+    .then(completeResult);
   } else if (extension === 'csv') {
     convertCsv(result)
     .then(jsonToTableHelper)
