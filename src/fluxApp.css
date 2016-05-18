@@ -1,5 +1,6 @@
 .box-input {
   height: 700px;
+  overflow: hidden;
 }
 
 .box-input.is-dragover {

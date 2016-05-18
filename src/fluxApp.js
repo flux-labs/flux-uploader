@@ -1,12 +1,34 @@
 'use strict';
 
 function handleLoad() {
+  setupModelViewer();
+  setupTableViewer();
+  $('.preview-loader').hide();
+  $('.upload-loader').hide();
+}
+
+function setupModelViewer() {
   $('#modelViewerContainer').css('margin', '0 auto');
   $('#modelViewerContainer').css('width', $('.box-input')[0].clientWidth * 0.85);
   $('#modelViewerContainer').css('height', $('.box-input')[0].clientHeight * 0.85);
 
   fluxViewport = new FluxViewport(modelViewerContainer);
   fluxViewport.setupDefaultLighting();
+
+  // TODO(waihon): Doesn't work.
+  $('#modelViewerContainer').css('overflow', 'hidden');
+  $('#modelViewerContainer').css('display', 'none');
+}
+
+function setupTableViewer() {
+  $('#tableViewerContainer').css('margin', '0 auto');
+  $('#tableViewerContainer').css('width', $('.box-input')[0].clientWidth * 0.85);
+  $('#tableViewerContainer').css('height', $('.box-input')[0].clientHeight * 0.85);
+
+  $('#tableViewerContainer').addClass('ui small teal compact table');
+
+  $('#tableViewerContainer').css('overflow', 'hidden');
+  $('#tableViewerContainer').css('display', 'none');
 }
 
 function handleFileSelect() {
@@ -20,7 +42,8 @@ function handleFileSelect() {
 
 function handleFileChange() {
   disableUpload();
-  //setUpBoxLoading();
+  disableViewContainers();
+  enablePreviewLoading();
   parsedDataPayload = null;
   var reader = new FileReader();
   reader.onloadend = handleFileRead;
@@ -28,19 +51,31 @@ function handleFileChange() {
 }
 
 function handleFileRead(e) {
-  // Check if we need to convert
   var filename = selectedFile.name.split('.');
   var extension = filename[filename.length-1];
   var result = e.target.result;
-  if (extension === 'obj') {
-    result = convertObj(result);
-  } else if (extension === 'stl') {
-    result = convertStl(result);
+
+  var completeResult = function(result) {
+    parsedDataPayload = result;
+    checkReadyToUpload();
+    disablePreviewLoading();
   }
 
-  jsonToViewportHelper(result)
-  parsedDataPayload = result;
-  checkReadyToUpload();
+  if (extension === 'obj') {
+    convertObj(result)
+    .then(jsonToViewportHelper)
+    .then(completeResult);
+  } else if (extension === 'stl') {
+    convertStl(result)
+    .then(jsonToViewportHelper)
+    .then(completeResult);
+  } else if (extension === 'csv') {
+    convertCsv(result)
+    .then(jsonToTableHelper)
+    .then(completeResult);
+  } else {
+    completeResult();
+  }
 }
 
 function initialView() {
@@ -60,7 +95,12 @@ function fluxView() {
     fluxDataSelector.logout();
   });
 
-  $('.upload-flux').click(uploadToFlux);
+  $('.upload-flux').click(function() {
+    if (previewLoading || uploadLoading) {
+      return;
+    }
+    uploadToFlux();
+  });
 
   fluxDataSelector.showProjects();
 }
@@ -119,30 +159,110 @@ function onValueChange(valuePromise) {
     });
 }
 
-function jsonToViewportHelper(data) {
-  fluxViewport.setGeometryEntity(data).then(function () {
+function jsonToViewportHelper(jsonData) {
+  return fluxViewport.setGeometryEntity(jsonData).then(function () {
+    $('#modelViewerContainer').show();
     fluxViewport.focus();
+
+    return jsonData;
   });
+}
+
+function jsonToTableHelper(jsonData) {
+  // Function to create a table as a child of el.
+  // data must be an array of arrays (outer array is rows).
+  function tableCreate(el, data) {
+      el.innerHTML = '';
+      var tbl  = document.createElement('table');
+
+      for (var i = 0; i < Math.min(15, data.length); ++i)
+      {
+          var tr = tbl.insertRow();
+          for(var j = 0; j < Math.min(15, data[i].length); ++j)
+          {
+              var td = tr.insertCell();
+              td.appendChild(document.createTextNode(data[i][j].toString()));
+          }
+      }
+      el.appendChild(tbl);
+  }
+  tableCreate($('#tableViewerContainer')[0], jsonData);
+  $('#tableViewerContainer').show();
+
+  return jsonData;
+}
+
+function disableViewContainers() {
+  $('#modelViewerContainer').hide();
+  $('#tableViewerContainer').hide();
 }
 
 function disableUpload() {
   $('.upload-flux').addClass('disabled');
 }
 
+function enablePreviewLoading() {
+  previewLoading = true;
+  $('.box-file').prop('disabled', true);
+  $('.preview-loader').show();
+}
+
+function disablePreviewLoading() {
+  // Hack to circumvent the blocking algorithm.
+  setTimeout(function(){
+    previewLoading = false;
+    $('.box-file').prop('disabled', false);
+    $('.preview-loader').hide();
+  }, 0);
+}
+
+function enableUploadLoading() {
+  uploadLoading = true;
+  $('.projects-selection-dropdown').addClass('disabled');
+  $('.data-keys-selection-dropdown').addClass('disabled');
+  $('.upload-flux').addClass('disabled loading');
+  $('.box-file').prop('disabled', true);
+  $('.upload-loader').show();
+}
+
+function disableUploadLoading() {
+  // Hack to circumvent the blocking algorithm.
+  setTimeout(function(){
+    uploadLoading = false;
+    $('.upload-flux').removeClass('disabled loading');
+    $('.projects-selection-dropdown').removeClass('disabled');
+    $('.data-keys-selection-dropdown').removeClass('disabled');
+    $('.box-file').prop('disabled', false);
+    $('.upload-loader').hide();
+  }, 0);
+}
+
 function checkReadyToUpload() {
   if (parsedDataPayload && selectedUploadDestination) {
-      console.log('Ready to Upload.');
     $('.upload-flux').removeClass('disabled');
   }
 }
 
+function reselectNewDataKey(key) {
+  fluxDataSelector.selectProject($('.projects-selection-dropdown').dropdown('get value'));
+  $('.data-keys-selection-dropdown').dropdown('set selected', key.id);
+}
+
 function uploadToFlux() {
+  enableUploadLoading();
+
   if ($($('.data-keys-selection-dropdown').dropdown('get item')[0]).hasClass('addition')) {
-    fluxDataSelector.createKey($('.data-keys-selection-dropdown').dropdown('get value'), parsedDataPayload);
+    fluxDataSelector.createKey($('.data-keys-selection-dropdown').dropdown('get value'), parsedDataPayload)
+      .then(function(key) {
+        reselectNewDataKey(key);
+        disableUploadLoading();
+      });
   } else {
     fluxDataSelector.updateKey($('.data-keys-selection-dropdown').dropdown('get value'), parsedDataPayload)
       .then(function(done) {
-        console.info(done);
+        setTimeout(function() {
+          disableUploadLoading();
+        }, 500);
       });
   }
 }

@@ -32,6 +32,7 @@
   <script src="./lib/flux-three-plugins.global.js"></script>
   <script src="./lib/flux-viewport.global.js"></script>
   <script src="./lib/flux-data-selector.js"></script>
+    <script src="./lib/papaparse.min.js"></script>
 
   <!-- UI Stuff -->
   <script src="./lib/semantic/dist/semantic.min.js"></script>
@@ -39,8 +40,7 @@
 
   <!-- App -->
   <script src="./src/fluxApp.js"></script>
-  <script src="./src/ObjToFlux.js"></script>
-  <script src="./src/StlToFlux.js"></script>
+  <script src="./src/converters.js"></script>
   <link rel="stylesheet" type="text/css" href="./src/fluxApp.css">
 </head>
 <body onload="handleLoad()">
@@ -73,13 +73,20 @@
   <div class="ui container segments">
     <div class="ui container segment">
       <div class="ui container center aligned box-input">
+        <div class="ui active inverted dimmer preview-loader">
+          <div class="ui large indeterminate text loader">Previewing File</div>
+        </div>
+        <div class="ui active inverted dimmer upload-loader">
+          <div class="ui large indeterminate text loader">Sending to Flux</div>
+        </div>
         <input class="box-file" type="file" id="inputFile"/>
         <label class="box-instruction" for="inputFile">
-          <div class="ui small teal button">Choose a File</div>
+          <div class="ui small teal button choose-file">Choose a File</div>
           or drag and drop it here.
         </label>
         <div class="ui left aligned container box-viewport">
           <div id="modelViewerContainer"></div>
+          <div id="tableViewerContainer"></div>
         </div>
       </div>
     </div>
@@ -128,8 +135,9 @@
     var fluxViewport = null;
     var fluxScene = null;
     var selectedFile = null;
+    var previewLoading = false;
     var parsedDataPayload = null;
-    var uploadingStatus = false;
+    var uploadLoading = false;
     var selectedUploadDestination = false;
 
     // Setup Flux Data Selector
@@ -145,21 +153,43 @@
     $('.box-input').on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
       e.preventDefault();
       e.stopPropagation();
+      if (previewLoading || uploadLoading) {
+        return;
+      }
     })
-    .on('dragover dragenter', function() {
+    .on('dragover dragenter', function(e) {
       $('.box-input').addClass('is-dragover');
     })
-    .on('dragleave dragend drop', function() {
+    .on('dragleave dragend drop', function(e) {
       $('.box-input').removeClass('is-dragover');
     })
     .on('drop', function(e) {
+      if (previewLoading || uploadLoading) {
+        return;
+      }
       if (e.originalEvent.dataTransfer.files.length === 1) {
         selectedFile = e.originalEvent.dataTransfer.files[0];
         handleFileChange();
       }
     });
 
-    $('.box-file').on('change', handleFileSelect);
+    $('.box-file').on('change', function(e) {
+      if (previewLoading || uploadLoading) {
+        return;
+      }
+      handleFileSelect();
+    })
+    .on('click', function(e) {
+      if (previewLoading || uploadLoading) {
+        return;
+      }
+    });
+
+    $('.upload-flux').on('click', function(e) {
+      if (previewLoading || uploadLoading) {
+        return;
+      }
+    })
   </script>
 </body>
 </html>
