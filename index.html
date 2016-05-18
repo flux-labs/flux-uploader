@@ -81,7 +81,7 @@
         </div>
         <input class="box-file" type="file" id="inputFile"/>
         <label class="box-instruction" for="inputFile">
-          <div class="ui small teal button choose-file">Choose a File</div>
+          <h2 class="ui teal header choose-file">Choose a File</h2>
           or drag and drop it here.
         </label>
         <div class="ui left aligned container box-viewport">
@@ -185,11 +185,18 @@
       }
     });
 
-    $('.upload-flux').on('click', function(e) {
-      if (previewLoading || uploadLoading) {
-        return;
-      }
+    $('.choose-file').on('mouseenter', function() {
+      $('.choose-file').transition('set looping').transition({
+        animation: 'pulse',
+        duration: 1500,
+        interval: 1000
+        });
     })
+    .on('mouseleave', function() {
+      $('.choose-file')
+        .transition('remove looping');
+    });
+
   </script>
 </body>
 </html>
