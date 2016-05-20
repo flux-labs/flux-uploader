@@ -7,7 +7,7 @@
     "express": "^4.13.4"
   },
   "devDependencies": {
-    "flux-viewport": "git+ssh://git@bitbucket.org/vannevartech/flux-viewport.git#03a1f2f26c6ccee025de3352d613408e880fd524"
+    "flux-viewport": "git+ssh://git@bitbucket.org/vannevartech/flux-viewport.git#b905ca14c64c4e4b9a9eb580ea08c0a82d7daef2"
   },
   "scripts": {
     "lint": "eslint index.js src/**;",
