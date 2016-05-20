@@ -263,6 +263,7 @@ function uploadToFlux() {
   if ($($('.data-keys-selection-dropdown').dropdown('get item')[0]).hasClass('addition')) {
     fluxDataSelector.createKey($('.data-keys-selection-dropdown').dropdown('get value'), parsedDataPayload)
       .then(function(key) {
+        sendUploadMetrics();
         reselectNewDataKey(key);
         setTimeout(function() {
           showSuccessMessage('Upload Successful', 'Your data is now available in your project.');
@@ -276,6 +277,7 @@ function uploadToFlux() {
   } else {
     fluxDataSelector.updateKey($('.data-keys-selection-dropdown').dropdown('get value'), parsedDataPayload)
       .then(function(done) {
+        sendUploadMetrics();
         setTimeout(function() {
           showSuccessMessage('Upload Successful', 'Your data is now available in your project.');
           disableUploadLoading();
@@ -303,4 +305,17 @@ function showSuccessMessage(header, text) {
 function closeAllMessages() {
   $('.error-message').removeClass('visible');
   $('.success-message').removeClass('visible');
+}
+
+function sendUploadMetrics() {
+  var filename = selectedFile.name.split('.');
+  var ext = filename[filename.length-1].toLowerCase();
+  ga('send', {
+    hitType: 'event',
+    eventCategory: 'File Extension and Size',
+    eventAction: 'upload',
+    eventLabel: ext,
+    eventValue: selectedFile.size
+  });
+
 }
