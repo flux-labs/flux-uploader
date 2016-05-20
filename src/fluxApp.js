@@ -15,6 +15,19 @@ function setupModelViewer() {
   fluxViewport = new FluxViewport(modelViewerContainer);
   fluxViewport.setClearColor();
   fluxViewport.setupDefaultLighting();
+
+  var viewTypes = FluxViewport.getViews();
+  console.log(viewTypes);
+  for (var viewName in viewTypes) {
+    $('.view-type-dropdown > div.menu')
+      .append('<div class="item" data-value='+viewTypes[viewName]+'>'+viewName+'</div>');
+  }
+  $('.view-type-dropdown').dropdown({
+    action: 'activate',
+    onChange: function(value, text, $selectedItem) {
+      fluxViewport.setView(parseInt(value));
+    }
+  });
 }
 
 function setupTableViewer() {
