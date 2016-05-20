@@ -42,7 +42,9 @@ function convertObj(inObj) {
       }
     }
     console.log('Loaded',result.faces.length,'faces and',result.vertices.length,'vertices.');
-    resolve(result);
+    resolve({
+      fluxData: result
+    });
   });
 }
 
@@ -73,7 +75,54 @@ function convertStl(inStl) {
       }
       result.faces.push(face);
     }
-    resolve(result);
+
+    // No result. Try binary approach instead.
+    if (result.vertices.length < 1) {
+      var fr = new FileReader();
+      fr.onloadend = function(e) {
+        // The stl binary is read into a DataView for processing
+        var dv = new DataView(e.target.result, 80); // 80 == unused header
+        var isLittleEndian = true;
+
+        // Read a 32 bit unsigned integer
+        var triangles = dv.getUint32(0, isLittleEndian);
+
+        var offset = 4;
+        for (var i = 0; i < triangles; i++) {
+          // Get the normal for this triangle by reading 3 32 but floats.
+          // Ignore this, add offset by 12.
+          offset += 12;
+
+          // Get all 3 vertices for this triangle, each represented
+          // by 3 32 bit floats.
+          for (var j = 0; j < 3; j++) {
+            result.vertices.push([
+              dv.getFloat32(offset, isLittleEndian),
+              dv.getFloat32(offset+4, isLittleEndian),
+              dv.getFloat32(offset+8, isLittleEndian)
+            ]);
+            offset += 12
+          }
+
+          // there's also a Uint16 "attribute byte count" that we
+          // don't need, it should always be zero.
+          offset += 2;
+
+          // Create a new face for from the vertices and the normal
+          result.faces.push([i*3, i*3+1, i*3+2]);
+        }
+        resolve({
+          fluxData: result
+        });
+      }
+      fr.readAsArrayBuffer(selectedFile);
+
+    } else {
+      resolve({
+        fluxData: result
+      });
+    }
+
   });
 }
 
@@ -121,13 +170,30 @@ function convertDxf(inDxf) {
         result.push({
           primitive: 'point',
           point: [entity.position.x, entity.position.y, entity.position.z],
+          attributes: {
+            materialProperties: {
+              color: binToRGB(entity.color)
+            }
+          },
+        });
+      } else if (entity.type === "TEXT") {
+        result.push({
+          primitive: 'text',
+          origin: [entity.startPoint.x, entity.startPoint.y, entity.startPoint.z],
+          text: entity.text,
+          attributes: {
+            materialProperties: {
+              color: binToRGB(entity.color)
+            }
+          },
         });
       } else {
-        console.info('cant parse entity of type ', entity.type);
+        console.info('cant parse entity of type ', entity.type, entity);
       }
     }
-
-    resolve(result);
+    resolve({
+      fluxData: result
+    });
   });
 }
 
@@ -140,7 +206,9 @@ function convertCsv(inCsv) {
           reject(reason);
       	},
         complete: function(results, file) {
-          resolve(results.data);
+          resolve({
+            fluxData: results.data
+          });
         }
       }
     );

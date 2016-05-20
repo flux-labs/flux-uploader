@@ -9,8 +9,8 @@ function handleLoad() {
 
 function setupModelViewer() {
   $('#modelViewerContainer').css('margin', '0 auto');
-  $('#modelViewerContainer').css('width', $('.box-input')[0].clientWidth * 0.85);
-  $('#modelViewerContainer').css('height', $('.box-input')[0].clientHeight * 0.85);
+  $('#modelViewerContainer').css('width', $('.box-input')[0].clientWidth * 0.9);
+  $('#modelViewerContainer').css('height', $('.box-input')[0].clientHeight * 0.9);
 
   fluxViewport = new FluxViewport(modelViewerContainer);
   fluxViewport.setClearColor();
@@ -19,10 +19,10 @@ function setupModelViewer() {
 
 function setupTableViewer() {
   $('#tableViewerContainer').css('margin', '0 auto');
-  $('#tableViewerContainer').css('width', $('.box-input')[0].clientWidth * 0.85);
-  $('#tableViewerContainer').css('height', $('.box-input')[0].clientHeight * 0.85);
+  $('#tableViewerContainer').css('width', $('.box-input')[0].clientWidth * 0.9);
+  $('#tableViewerContainer').css('height', $('.box-input')[0].clientHeight * 0.9);
 
-  $('#tableViewerContainer').addClass('ui small teal compact table');
+  $('#tableViewerContainer').addClass('ui small teal compact celled table');
 
   $('#tableViewerContainer').css('overflow', 'hidden');
   $('#tableViewerContainer').css('display', 'none');
@@ -39,8 +39,14 @@ function handleFileSelect() {
 
 function handleFileChange() {
   disableUpload();
+  closeAllMessages();
   disableViewContainers();
   enablePreviewLoading();
+
+  $('.initial-instruction').hide();
+  $('.preview-instruction .filename').text(selectedFile.name);
+  $('.preview-instruction').show();
+
   parsedDataPayload = null;
   var reader = new FileReader();
   reader.onloadend = handleFileRead;
@@ -52,8 +58,8 @@ function handleFileRead(e) {
   var extension = filename[filename.length-1].toLowerCase();
   var result = e.target.result;
 
-  var completeResult = function(result) {
-    parsedDataPayload = result;
+  var completeResult = function(resData) {
+    parsedDataPayload = resData.fluxData;
     checkReadyToUpload();
     disablePreviewLoading();
   }
@@ -75,7 +81,9 @@ function handleFileRead(e) {
     .then(jsonToTableHelper)
     .then(completeResult);
   } else {
-    completeResult();
+    console.error('File Not Supported', 'The extension .' + extension + ' is not supported. Please try another file instead.');
+    showErrorMessage('File Not Supported', 'The extension .' + extension + ' is not supported. Please try another file instead.');
+    disablePreviewLoading();
   }
 }
 
@@ -160,16 +168,16 @@ function onValueChange(valuePromise) {
     });
 }
 
-function jsonToViewportHelper(jsonData) {
-  return fluxViewport.setGeometryEntity(jsonData).then(function () {
+function jsonToViewportHelper(resData) {
+  return fluxViewport.setGeometryEntity(resData.fluxData).then(function () {
     $('#modelViewerContainer').show();
     fluxViewport.focus();
 
-    return jsonData;
+    return resData;
   });
 }
 
-function jsonToTableHelper(jsonData) {
+function jsonToTableHelper(resData) {
   // Function to create a table as a child of el.
   // data must be an array of arrays (outer array is rows).
   function tableCreate(el, data) {
@@ -187,10 +195,10 @@ function jsonToTableHelper(jsonData) {
       }
       el.appendChild(tbl);
   }
-  tableCreate($('#tableViewerContainer')[0], jsonData);
+  tableCreate($('#tableViewerContainer')[0], resData.fluxData);
   $('#tableViewerContainer').show();
 
-  return jsonData;
+  return resData;
 }
 
 function disableViewContainers() {
@@ -256,14 +264,43 @@ function uploadToFlux() {
     fluxDataSelector.createKey($('.data-keys-selection-dropdown').dropdown('get value'), parsedDataPayload)
       .then(function(key) {
         reselectNewDataKey(key);
+        setTimeout(function() {
+          showSuccessMessage('Upload Successful', 'Your data is now available in your project.');
+          disableUploadLoading();
+        }, 500);
+      })
+      .catch(function(error) {
+        showErrorMessage('Upload Failed', 'Check your internet connection or try refreshing the page.');
         disableUploadLoading();
       });
   } else {
     fluxDataSelector.updateKey($('.data-keys-selection-dropdown').dropdown('get value'), parsedDataPayload)
       .then(function(done) {
         setTimeout(function() {
+          showSuccessMessage('Upload Successful', 'Your data is now available in your project.');
           disableUploadLoading();
         }, 500);
+      })
+      .catch(function(error) {
+        showErrorMessage('Upload Failed', 'Check your internet connection or try refreshing the page.');
+        disableUploadLoading();
       });
   }
+}
+
+function showErrorMessage(header, text) {
+  $('.error-message .header').text(header);
+  $('.error-message p').text(text);
+  $('.error-message').addClass('visible');
+}
+
+function showSuccessMessage(header, text) {
+  $('.success-message .header').text(header);
+  $('.success-message p').text(text);
+  $('.success-message').addClass('visible');
+}
+
+function closeAllMessages() {
+  $('.error-message').removeClass('visible');
+  $('.success-message').removeClass('visible');
 }

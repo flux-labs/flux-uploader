@@ -78,12 +78,18 @@
           <div class="ui large indeterminate text loader">Previewing File</div>
         </div>
         <div class="ui active inverted dimmer upload-loader">
-          <div class="ui large indeterminate text loader">Sending to Flux</div>
+          <div class="ui large indeterminate text loader">Sending to FLUX</div>
         </div>
         <input class="box-file" type="file" id="inputFile"/>
         <label class="box-instruction" for="inputFile">
-          <h2 class="ui teal header choose-file">Choose a File</h2>
-          or drag and drop it here.
+          <div class="initial-instruction">
+            <h2 class="ui teal header choose-file">Choose a File</h2>
+            or drag and drop it here.
+          </div>
+          <div class="preview-instruction">
+            <h2 class="ui header teal filename"></h2>
+            (click or drag over a file to change)
+          </div>
         </label>
         <div class="ui left aligned container box-viewport">
           <div id="modelViewerContainer"></div>
@@ -107,7 +113,7 @@
           <div class="field">
             <div class="ui fluid search selection huge dropdown data-keys-selection-dropdown disabled">
               <i class="dropdown icon"></i>
-              <div class="default text">Select Data Key</div>
+              <div class="default text">Select Key (or type to create)</div>
               <div class="menu">
               </div>
             </div>
@@ -122,6 +128,18 @@
           </div>
         </div>
       </div>
+    </div>
+    <div class="ui negative attached message error-message">
+      <i class="close icon"></i>
+      <div class="header">
+      </div>
+      <p></p>
+    </div>
+    <div class="ui positive attached message success-message">
+      <i class="close icon"></i>
+      <div class="header">
+      </div>
+      <p></p>
     </div>
   </div>
   <script>
@@ -191,12 +209,19 @@
         animation: 'pulse',
         duration: 1500,
         interval: 1000
-        });
+      });
     })
     .on('mouseleave', function() {
       $('.choose-file')
         .transition('remove looping');
     });
+
+    $('.message .close')
+      .on('click', function() {
+        $(this)
+          .closest('.message')
+          .transition('fade');
+      });
 
   </script>
 </body>

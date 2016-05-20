@@ -17,11 +17,15 @@
   cursor: pointer;
 }
 
+.box-instruction .preview-instruction {
+  display: none;
+}
+
 .box-viewport {
   padding-top: 2%;
   border: 0px;
 }
 
-.initial-view-login .flux-view-logout .flux-view-form {
+.initial-view-login, .flux-view-logout, .flux-view-form, .error-message, .success-message {
   display: none;
 }
