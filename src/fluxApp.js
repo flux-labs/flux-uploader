@@ -13,11 +13,8 @@ function setupModelViewer() {
   $('#modelViewerContainer').css('height', $('.box-input')[0].clientHeight * 0.85);
 
   fluxViewport = new FluxViewport(modelViewerContainer);
+  fluxViewport.setClearColor();
   fluxViewport.setupDefaultLighting();
-
-  // TODO(waihon): Doesn't work.
-  $('#modelViewerContainer').css('overflow', 'hidden');
-  $('#modelViewerContainer').css('display', 'none');
 }
 
 function setupTableViewer() {
@@ -52,7 +49,7 @@ function handleFileChange() {
 
 function handleFileRead(e) {
   var filename = selectedFile.name.split('.');
-  var extension = filename[filename.length-1];
+  var extension = filename[filename.length-1].toLowerCase();
   var result = e.target.result;
 
   var completeResult = function(result) {
