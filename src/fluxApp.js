@@ -17,7 +17,10 @@ function setupModelViewer() {
   fluxViewport.setupDefaultLighting();
 
   var viewTypes = FluxViewport.getViews();
-  console.log(viewTypes);
+
+  // NOTE: Remove 'END' as it is a buggy perspective.
+  delete viewTypes['END'];
+
   for (var viewName in viewTypes) {
     $('.view-type-dropdown > div.menu')
       .append('<div class="item" data-value='+viewTypes[viewName]+'>'+viewName+'</div>');
