@@ -15,8 +15,8 @@ function setupModelViewer() {
   fluxViewport = new FluxViewport(modelViewerContainer);
   fluxViewport.setClearColor();
   fluxViewport.setupDefaultLighting();
-
-  var viewTypes = FluxViewport.getViews();
+  
+  var viewTypes = JSON.parse(JSON.stringify(FluxViewport.getViews()));
 
   // NOTE: Remove 'END' as it is a buggy perspective.
   delete viewTypes['END'];
