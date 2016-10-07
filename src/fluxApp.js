@@ -239,10 +239,8 @@ function jsonToTableHelper(resData) {
 }
 
 function jsonToJsonHelper(resData) {
-  // console.log(resData.fluxData);
-  // $('#jsonViewerContainer').text(JSON.stringify(resData));
-  aceEditor.setValue(JSON.stringify(resData.fluxData, null, 2));
-  aceEditor.gotoLine(1,0,false);
+  aceEditor.setValue(JSON.stringify(resData.fluxData, null, 2)); // stringify *and* prettify JSON 
+  aceEditor.gotoLine(1,0,false); // because without this, all the text is selected after load
   $('#jsonViewerContainer').show();
 
   return resData;

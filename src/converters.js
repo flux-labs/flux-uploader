@@ -216,6 +216,8 @@ function convertCsv(inCsv) {
 }
 
 function convertJson(inJson) {
+  // TODO: provide more useful response to user if JSON.parse fails. Should tell them there was a problem
+  // with the JSON, and ideally, the location. Right now the app just "hangs" with preview loading animation.
   return new Promise(function(resolve, reject) {
     try {
       let json = JSON.parse(inJson);
