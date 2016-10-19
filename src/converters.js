@@ -201,10 +201,10 @@ function convertCsv(inCsv) {
   return new Promise(function(resolve, reject) {
     Papa.parse(inCsv, {
         error: function(err, file, inputElem, reason) {
-      		// Executed if an error occurs while loading the file,
-      		// or if before callback aborted for some reason.
+          // Executed if an error occurs while loading the file,
+          // or if before callback aborted for some reason.
           reject(reason);
-      	},
+        },
         complete: function(results, file) {
           resolve({
             fluxData: results.data
@@ -212,6 +212,15 @@ function convertCsv(inCsv) {
         }
       }
     );
+  });
+}
+
+function convertJson(inJson) {
+  // TODO: provide more useful response to user if JSON.parse fails. Should tell them there was a problem
+  // with the JSON, and ideally, the location. Right now the app just "hangs" with preview loading animation.
+  return new Promise(function(resolve, reject) {
+    var json = JSON.parse(inJson);
+    resolve({ fluxData: json });
   });
 }
 
