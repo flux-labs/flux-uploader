@@ -3,6 +3,7 @@
 function handleLoad() {
   setupModelViewer();
   setupTableViewer();
+  setupJsonViewer();
   $('.preview-loader').hide();
   $('.upload-loader').hide();
 }
@@ -42,6 +43,22 @@ function setupTableViewer() {
 
   $('#tableViewerContainer').css('overflow', 'hidden');
   $('#tableViewerContainer').css('display', 'none');
+}
+
+function setupJsonViewer() {
+  $('#jsonViewerContainer').css('margin', '0 auto');
+  $('#jsonViewerContainer').css('width', $('.box-input')[0].clientWidth * 0.9);
+  $('#jsonViewerContainer').css('height', $('.box-input')[0].clientHeight * 0.9);
+
+  $('#jsonViewerContainer').addClass('ui small teal compact celled table');
+  aceEditor = ace.edit("jsonViewerContainer");
+  aceEditor.setTheme("ace/theme/chrome");
+  aceEditor.getSession().setMode("ace/mode/json");
+  aceEditor.setReadOnly(true);
+  aceEditor.$blockScrolling = Infinity; // disables console message about automatic scrolling
+
+  $('#jsonViewerContainer').css('overflow', 'hidden');
+  $('#jsonViewerContainer').css('display', 'none');
 }
 
 function handleFileSelect() {
@@ -95,6 +112,10 @@ function handleFileRead(e) {
   } else if (extension === 'csv') {
     convertCsv(result)
     .then(jsonToTableHelper)
+    .then(completeResult);
+  } else if (extension === 'json') {
+    convertJson(result)
+    .then(jsonToJsonHelper)
     .then(completeResult);
   } else {
     console.error('File Not Supported', 'The extension .' + extension + ' is not supported. Please try another file instead.');
@@ -217,9 +238,18 @@ function jsonToTableHelper(resData) {
   return resData;
 }
 
+function jsonToJsonHelper(resData) {
+  aceEditor.setValue(JSON.stringify(resData.fluxData, null, 2)); // stringify *and* prettify JSON 
+  aceEditor.gotoLine(1,0,false); // because without this, all the text is selected after load
+  $('#jsonViewerContainer').show();
+
+  return resData;
+}
+
 function disableViewContainers() {
   $('#modelViewerContainer').hide();
   $('#tableViewerContainer').hide();
+  $('#jsonViewerContainer').hide();
 }
 
 function disableUpload() {
