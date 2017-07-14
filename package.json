@@ -1,13 +1,10 @@
 {
-  "name": "flux-viewport",
+  "name": "flux-uploader",
   "version": "1.0.0",
-  "description": "three.js Viewport for Flux",
+  "description": "Upload flux json to a data key",
   "main": "index.js",
   "dependencies": {
     "express": "^4.13.4"
-  },
-  "devDependencies": {
-    "flux-viewport": "git+ssh://git@bitbucket.org/vannevartech/flux-viewport.git#b905ca14c64c4e4b9a9eb580ea08c0a82d7daef2"
   },
   "scripts": {
     "lint": "eslint index.js src/**;",
